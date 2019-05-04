@@ -14,21 +14,13 @@ me:
 	syscall
 	pop rax
 
-	mov rax, "rld!"
+	mov rax, "rld"
+	or rax, 0x0a000000
 	push rax
 	mov rax, 1
 	mov rdi, 1
 	mov rsi, rsp
-	mov rdx, 4
-	syscall
-	pop rax
-
-	mov rax, 10
-	push rax
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, rsp
-	mov rdx, 1
+	mov rdx, 5
 	syscall
 	pop rax
 

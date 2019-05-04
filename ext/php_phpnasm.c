@@ -61,14 +61,17 @@ static PHP_METHOD(PhpNasm, execute) {
 
     char test[] = "Hello World";
     asm("mov %0, %%rax; push %%rax" : : "r"(test));
-    // asm("mov $1, %rax");
-    // asm("mov $1, %rdi");
-    // asm("mov (%rsp), %rsi");
-    // asm("mov $13, %rdx");
-    // asm("syscall");
+    asm("mov $1, %rax");
+    asm("mov $1, %rdi");
+    asm("mov (%rsp), %rsi");
+    asm("mov $13, %rdx");
+    asm("syscall");
 
-    // // Harus di-pop di sini biar gak segfault.
-    // asm("pop %rax")
+    // Harus di-pop di sini biar gak segfault.
+    asm("pop %rax");
+
+    // Kalau pop di dalam map langsung segfault
+    // Padahal butuh pop stack biar dapet value yang dipush
     ((void * (*)())map)();
 
     munmap(map, code_size);

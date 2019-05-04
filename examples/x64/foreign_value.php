@@ -1,7 +1,6 @@
 <?php
 require __DIR__."/../../src/autoload.php";
 $code = <<<CODE
-	pop rsi
 	mov rax, 1
 	mov rdi, 1
 	mov rsi, rsi

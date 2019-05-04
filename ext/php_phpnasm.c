@@ -48,13 +48,16 @@ static PHP_METHOD(PhpNasm, execute) {
         Z_PARAM_VARIADIC('+', args, argc)
     ZEND_PARSE_PARAMETERS_END();
 
-    for (int i = 0; i < argc; ++i) {
-        if (Z_TYPE_P(args+i) != IS_STRING) {
-            convert_to_string(args+i);
-        }
-        arg_val = Z_STRVAL_P(args+i);
-        php_printf("test %s\n", arg_val);
-    }
+
+    // // Get all args 
+    // for (int i = 0; i < argc; ++i) {
+    //     if (Z_TYPE_P(args+i) != IS_STRING) {
+    //         convert_to_string(args+i);
+    //     }
+    //     arg_val = Z_STRVAL_P(args+i);
+    //     php_printf("test %s\n", arg_val);
+    //     asm("mov %0, %%rax; push %%rax" : : "r"(arg_val));
+    // }
 
     char test[] = "Hello World";
     asm("mov %0, %%rax; push %%rax" : : "r"(test));

@@ -46,35 +46,25 @@ static PHP_METHOD(PhpNasm, execute) {
 
     ZEND_PARSE_PARAMETERS_START(0, -1)
         Z_PARAM_VARIADIC('+', args, argc)
-    ZEND_PARSE_PARAMETERS_END();
+    ZEND_PARSE_PARAMETERS_END();    
 
+    // Get all args
+    for (int i = 0; i < argc; i++) {
+        if (Z_TYPE_P(args+i) == IS_STRING) {
+            convert_to_string(args+i);
+            arg_val = &Z_STRVAL_P(args+i);
+        } else {
+            arg_val = &((args+i)->value);
+        }
+        asm volatile("mov %0, %%rdi; push %%rdi" : : "r"(arg_val));
+    }
+    asm volatile("lea (%rsp), %rdi");
 
-    // // Get all args 
-    // for (int i = 0; i < argc; ++i) {
-    //     if (Z_TYPE_P(args+i) != IS_STRING) {
-    //         convert_to_string(args+i);
-    //     }
-    //     arg_val = Z_STRVAL_P(args+i);
-    //     php_printf("test %s\n", arg_val);
-    //     asm("mov %0, %%rax; push %%rax" : : "r"(arg_val));
-    // }
-
-    char test[] = "Hello World";
-    asm("mov %0, %%rax; push %%rax" : : "r"(test));
-    asm("mov $1, %rax");
-    asm("mov $1, %rdi");
-    asm("mov (%rsp), %rsi");
-    asm("mov $13, %rdx");
-    asm("syscall");
-
-    // Harus di-pop di sini biar gak segfault.
-    asm("pop %rax");
-
-    // Kalau pop di dalam map langsung segfault
-    // Padahal butuh pop stack biar dapet value yang dipush
     ((void * (*)())map)();
 
-    munmap(map, code_size);
+    for (int i = 0; i < argc; ++i) {
+        asm volatile("pop %rdi");   
+    }
 }
 
 static zend_function_entry phpnasm_methods[] = {

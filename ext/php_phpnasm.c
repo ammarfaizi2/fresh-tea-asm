@@ -40,7 +40,7 @@ static PHP_METHOD(PhpNasm, execute) {
 
     void *map = mmap(NULL, code_size, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
     memcpy(map, code, code_size);
-    ((void * (*)())map)();
+    ((void * (*)())map )();
     munmap(map, code_size);
 }
 

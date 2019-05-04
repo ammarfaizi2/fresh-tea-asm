@@ -66,6 +66,9 @@ static PHP_METHOD(PhpNasm, execute) {
     // asm("mov (%rsp), %rsi");
     // asm("mov $13, %rdx");
     // asm("syscall");
+
+    // // Harus di-pop di sini biar gak segfault.
+    // asm("pop %rax")
     ((void * (*)())map)();
 
     munmap(map, code_size);

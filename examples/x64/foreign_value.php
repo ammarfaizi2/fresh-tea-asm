@@ -1,10 +1,10 @@
 <?php
 require __DIR__."/../../src/autoload.php";
 $code = <<<CODE
-	mov r9, rdi
+	pop rsi
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
+	mov rsi, rsi
 	mov rdx, 13
 	syscall
 	ret

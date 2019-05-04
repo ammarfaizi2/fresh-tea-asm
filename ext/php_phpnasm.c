@@ -29,15 +29,10 @@ static PHP_METHOD(PhpNasm, __construct) {
 static PHP_METHOD(PhpNasm, execute) {
     zval rv, *_code, tmp;
     char *code;
-    size_t code_size;
-
-    char *rdi;
-    size_t rdi_size;
-
-    ZEND_PARSE_PARAMETERS_START(0, 1)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_STRING(rdi, rdi_size)
-    ZEND_PARSE_PARAMETERS_END();
+    size_t code_size;    
+    zval *args;
+    int argc = 0;
+    void *arg_val;
 
     _code = zend_read_property(phpnasm_ce, getThis(), ZEND_STRL("code"), 0, &rv);
     if (Z_TYPE_P(_code) != IS_STRING) {
@@ -48,11 +43,27 @@ static PHP_METHOD(PhpNasm, execute) {
 
     void *map = mmap(NULL, code_size, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
     memcpy(map, code, code_size);
-    
-    // // No parameter
-    // ((void * (*)())map)();
 
-    ((void * (*)(void *))map)(rdi);
+    ZEND_PARSE_PARAMETERS_START(0, -1)
+        Z_PARAM_VARIADIC('+', args, argc)
+    ZEND_PARSE_PARAMETERS_END();
+
+    for (int i = 0; i < argc; ++i) {
+        if (Z_TYPE_P(args+i) != IS_STRING) {
+            convert_to_string(args+i);
+        }
+        arg_val = Z_STRVAL_P(args+i);
+        php_printf("test %s\n", arg_val);
+    }
+
+    char test[] = "Hello World";
+    asm("mov %0, %%rax; push %%rax" : : "r"(test));
+    // asm("mov $1, %rax");
+    // asm("mov $1, %rdi");
+    // asm("mov (%rsp), %rsi");
+    // asm("mov $13, %rdx");
+    // asm("syscall");
+    ((void * (*)())map)();
 
     munmap(map, code_size);
 }

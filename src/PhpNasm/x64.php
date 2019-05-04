@@ -25,8 +25,29 @@ final class x64
 		$this->text = $text;
 	}
 
-	public function compile()
+	/**
+	 * @return void
+	 */
+	public function compile(): void
 	{
 		
+	}
+
+	/**
+	 * @param string $opcode
+	 * @return string
+	 */
+	private function buildMnemonic(string $opcode): string
+	{
+		$opcode = strtolower($opcode);
+		switch ($opcode) {
+			case "rax":
+				
+				break;
+			
+			default:
+				# code...
+				break;
+		}
 	}
 }

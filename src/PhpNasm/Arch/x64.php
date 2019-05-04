@@ -20,7 +20,7 @@ final class x64
 	/**
 	 * @var string
 	 */
-	private $tmpDir;
+	private $tmpDir = "/tmp";
 
 	/**
 	 * @param string $text

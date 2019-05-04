@@ -27,7 +27,7 @@ static PHP_METHOD(PhpNasm, __construct) {
 }
 
 static PHP_METHOD(PhpNasm, execute) {
-    zval rv, *_code, tmp;
+    zval rv, *_code;
     char *code;
     size_t code_size;    
     zval *args;

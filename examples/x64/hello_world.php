@@ -3,9 +3,7 @@
 require __DIR__."/../../src/autoload.php";
 
 $code = <<<CODE
-
-	mov r9,0
-
+	mov r10,0
 me:
 	mov rax, "Hello Wo"
 	push rax
@@ -34,13 +32,10 @@ me:
 	syscall
 	pop rax
 
-	inc r9
-	cmp r9, 100
+	inc r10
+	cmp r10, 100
 	jl me
-
 	ret
-
-
 CODE;
 
 $code = (new PhpNasm\Arch\x64($code))->compile();

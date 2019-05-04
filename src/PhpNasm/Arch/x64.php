@@ -18,6 +18,11 @@ final class x64
 	private $text;
 
 	/**
+	 * @var string
+	 */
+	private $tmpDir;
+
+	/**
 	 * @param string $text
 	 *
 	 * Constructor.
@@ -29,19 +34,56 @@ final class x64
 
 	/**
 	 * @throws \PhpNasm\PhpNasmException
+	 * @param string $tmpDir
+	 * @return void
+	 */
+	public function setTmpDir(string $tmpDir): void
+	{
+		if (is_dir($tmpDir)) {
+			throw PhpNasmException("tmp_dir is not a directory: {$tmpDir}");
+		}
+
+		if (!is_writable($tmpDir)) {
+			throw PhpNasmException("tmp_dir is not writeable: {$tmpDir}");	
+		}
+
+		$this->tmpDir = $tmpDir;
+	}
+
+	/**
+	 * @throws \PhpNasm\PhpNasmException
 	 * @return string
 	 */
 	public function compile(): string
 	{
-		$tmpFile = "/tmp/phpnasm_".time()."_".rand().".asm";
+		$successFlag = time().rand().rand();
+		$tmpFile = $this->tmpDir."/phpnasm_".time()."_".rand().".asm";
+
 		$nasm = escapeshellarg(trim(shell_exec("which nasm")));
 		$objcopy = escapeshellarg(trim(shell_exec("which objcopy")));
+
 		if (!$nasm) {
 			throw new PhpNasmException("nasm binary not found");
 		}
+
+		if (!$objcopy) {
+			throw new PhpNasmException("objcopy binary not found");
+		}
+
 		file_put_contents($tmpFile, "section .text\n\n_start:\n{$this->text}");
-		shell_exec($nasm." -f elf64 -O0 ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o"));
-		shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin"));
+
+		$nasmCompile = shell_exec($nasm." -f elf64 -O0 ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o")." && echo ".$successFlag);
+		if (strpos($nasmCompile, $successFlag) === false) {
+			throw new PhpNasmException("Compile error");
+		}		
+
+		$linkExe = shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin")." && echo ".$successFlag);
+		if (strpos($linkExe, $successFlag) === false) {
+			throw new PhpNasmException("Link error");
+		}
+
+		unset($nasmCompile, $linkExe, $successFlag, $nasm, $objcopy);
+
 		$compiled = file_get_contents($tmpFile.".bin");
 		unlink($tmpFile);
 		unlink($tmpFile.".o");

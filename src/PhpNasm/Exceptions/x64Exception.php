@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpNasm;
+namespace PhpNasm\Exceptions;
 
 /**
  * @author Ammar Faizi <ammarfaizi2@gmail.com>

@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpNasm;
+namespace PhpNasm\Exceptions;
 
 /**
  * @author Ammar Faizi <ammarfaizi2@gmail.com>
@@ -8,6 +8,6 @@ namespace PhpNasm;
  * @version 0.0.1
  * @package \PhpNasm\Exceptions
  */
-class x64Exception extends PhpNasmException
+class PhpNasmException extends PhpNasmException
 {
 }

@@ -3,7 +3,7 @@
 PHPNasm is an extension for PHP that makes the PHP able to execute NASM and raw machine code.
 
 # Installation
-```console
+```shell
 sudo apt install nasm -y
 git clone https://github.com/ammarfaizi2/PhpNasm
 cd PhpNasm/ext

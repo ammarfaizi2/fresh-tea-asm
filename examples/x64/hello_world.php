@@ -33,4 +33,3 @@ CODE;
 $code = (new PhpNasm\Arch\x64($code))->compile();
 $exe = new PhpNasm\Executor($code);
 $exe->execute();
-

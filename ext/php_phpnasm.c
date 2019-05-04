@@ -28,7 +28,6 @@ static PHP_METHOD(PhpNasm, __construct) {
 
 static PHP_METHOD(PhpNasm, execute) {
     zval rv, *_code;
-    char *code;
     size_t code_size;    
     zval *args;
     int argc = 0;
@@ -38,11 +37,10 @@ static PHP_METHOD(PhpNasm, execute) {
     if (Z_TYPE_P(_code) != IS_STRING) {
         convert_to_string(_code);
     }
-    code = Z_STRVAL_P(_code);
     code_size = Z_STRLEN_P(_code);
 
     void *map = mmap(NULL, code_size, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-    memcpy(map, code, code_size);
+    memcpy(map, Z_STRVAL_P(_code), code_size);
 
     ZEND_PARSE_PARAMETERS_START(0, -1)
         Z_PARAM_VARIADIC('+', args, argc)
@@ -63,7 +61,7 @@ static PHP_METHOD(PhpNasm, execute) {
     ((void * (*)())map)();
 
     for (int i = 0; i < argc; ++i) {
-        asm volatile("pop %rdi");   
+        asm volatile("pop %rdi");
     }
 }
 

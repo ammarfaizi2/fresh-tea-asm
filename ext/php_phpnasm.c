@@ -51,6 +51,7 @@ static PHP_METHOD(PhpNasm, execute) {
     
     // // No parameter
     // ((void * (*)())map)();
+
     ((void * (*)(void *))map)(rdi);
 
     munmap(map, code_size);

@@ -45,10 +45,7 @@ static PHP_METHOD(PhpNasm, execute) {
 }
 
 static zend_function_entry phpnasm_methods[] = {
-    // Prohibit construct.
     PHP_ME(PhpNasm, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
-
-    // Generate random string.
     PHP_ME(PhpNasm, execute, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };

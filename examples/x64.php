@@ -4,7 +4,9 @@ require __DIR__."/../src/autoload.php";
 
 $code = <<<CODE
 
+	mov r9,0
 
+me:
 	mov rax, "Hello Wo"
 	push rax
 	mov rax, 1
@@ -32,9 +34,11 @@ $code = <<<CODE
 	syscall
 	pop rax
 
-	mov rax, 60
-	xor rdi, rdi
-	syscall
+	inc r9
+	cmp r9, 100
+	jl me
+
+	ret
 
 
 CODE;
@@ -42,3 +46,4 @@ CODE;
 $code = (new PhpNasm\Arch\x64($code))->compile();
 $exe = new PhpNasm\Executor($code);
 $exe->execute();
+

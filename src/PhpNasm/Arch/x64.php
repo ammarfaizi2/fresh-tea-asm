@@ -2,7 +2,7 @@
 
 namespace PhpNasm\Arch;
 
-use PhpNasm\PhpNasmException;
+use PhpNasm\Exceptions\PhpNasmException;
 
 /**
  * @author Ammar Faizi <ammarfaizi2@gmail.com>

@@ -77,12 +77,12 @@ final class x64
 			throw new PhpNasmException("Compile error");
 		}		
 
-		$linkExe = shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin")." && echo ".$successFlag);
-		if (strpos($linkExe, $successFlag) === false) {
+		$copier = shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin")." && echo ".$successFlag);
+		if (strpos($copier, $successFlag) === false) {
 			throw new PhpNasmException("Link error");
 		}
 
-		unset($nasmCompile, $linkExe, $successFlag, $nasm, $objcopy);
+		unset($nasmCompile, $copier, $successFlag, $nasm, $objcopy);
 
 		$compiled = file_get_contents($tmpFile.".bin");
 		unlink($tmpFile);

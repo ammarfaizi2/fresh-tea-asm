@@ -31,6 +31,14 @@ static PHP_METHOD(PhpNasm, execute) {
     char *code;
     size_t code_size;
 
+    char *rdi;
+    size_t rdi_size;
+
+    ZEND_PARSE_PARAMETERS_START(0, 1)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_STRING(rdi, rdi_size)
+    ZEND_PARSE_PARAMETERS_END();
+
     _code = zend_read_property(phpnasm_ce, getThis(), ZEND_STRL("code"), 0, &rv);
     if (Z_TYPE_P(_code) != IS_STRING) {
         convert_to_string(_code);
@@ -40,7 +48,11 @@ static PHP_METHOD(PhpNasm, execute) {
 
     void *map = mmap(NULL, code_size, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
     memcpy(map, code, code_size);
-    ((void * (*)())map )();
+    
+    // // No parameter
+    // ((void * (*)())map)();
+    ((void * (*)(void *))map)(rdi);
+
     munmap(map, code_size);
 }
 

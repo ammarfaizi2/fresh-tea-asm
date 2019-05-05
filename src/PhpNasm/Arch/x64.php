@@ -90,7 +90,7 @@ final class x64
 		$nasmCompile = shell_exec($nasm." -f elf64 -O{$this->optimization} ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o")." && echo ".$successFlag);
 		if (strpos($nasmCompile, $successFlag) === false) {
 			throw new PhpNasmException("Compile error");
-		}		
+		}
 
 		$copier = shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin")." && echo ".$successFlag);
 		if (strpos($copier, $successFlag) === false) {

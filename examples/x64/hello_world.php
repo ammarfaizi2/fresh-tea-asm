@@ -25,11 +25,13 @@ me:
 	pop rax
 
 	inc r10
-	cmp r10, 100
+	cmp r10, 10
 	jl me
 	ret
 CODE;
 
-$code = (new PhpNasm\Arch\x64($code))->compile();
+$x64 = new PhpNasm\Arch\x64($code);
+$code = $x64->compile();
+
 $exe = new PhpNasm\Executor($code);
 $exe->execute();

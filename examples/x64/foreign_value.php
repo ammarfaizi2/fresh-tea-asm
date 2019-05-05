@@ -3,7 +3,7 @@ require __DIR__."/../../src/autoload.php";
 $code = <<<CODE
 	mov r9, rdi
 
-	mov rsi, [r9] ; get parameter 6
+	mov rsi, [r9]
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
@@ -41,7 +41,9 @@ $code = <<<CODE
 
 	ret
 CODE;
-$code = (new PhpNasm\Arch\x64($code))->compile();
+
+$x64 = new PhpNasm\Arch\x64($code);
+$code = $x64->compile();
 
 $a = "parameter 1\n";
 $b = "parameter 2\n";

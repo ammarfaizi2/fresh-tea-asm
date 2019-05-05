@@ -23,6 +23,11 @@ final class x64
 	private $tmpDir = "/tmp";
 
 	/**
+	 * @var int
+	 */
+	private $optimization = 0;
+
+	/**
 	 * @param string $text
 	 *
 	 * Constructor.
@@ -52,6 +57,16 @@ final class x64
 
 	/**
 	 * @throws \PhpNasm\PhpNasmException
+	 * @param int $o
+	 * @return void
+	 */
+	public function setOptimization(int $o = 0): void
+	{
+		$this->optimization = $o;
+	}
+
+	/**
+	 * @throws \PhpNasm\PhpNasmException
 	 * @return string
 	 */
 	public function compile(): string
@@ -72,7 +87,7 @@ final class x64
 
 		file_put_contents($tmpFile, "section .text\n\n_start:\n{$this->text}");
 
-		$nasmCompile = shell_exec($nasm." -f elf64 -O0 ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o")." && echo ".$successFlag);
+		$nasmCompile = shell_exec($nasm." -f elf64 -O{$this->optimization} ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o")." && echo ".$successFlag);
 		if (strpos($nasmCompile, $successFlag) === false) {
 			throw new PhpNasmException("Compile error");
 		}		

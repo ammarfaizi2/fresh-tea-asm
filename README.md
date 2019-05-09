@@ -1,6 +1,6 @@
 
 # PHPNasm
-PHPNasm is an extension for PHP that makes the PHP able to execute NASM and raw machine code.
+PHPNasm is an extension for PHP that makes the PHP able to compile NASM code and execute raw machine code. It uses mapped memory (mmap) to store compiled code and call it as a callback.
 
 # Installation
 ```shell

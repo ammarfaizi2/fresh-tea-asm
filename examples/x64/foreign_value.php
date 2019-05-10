@@ -3,7 +3,7 @@ require __DIR__."/../../src/autoload.php";
 $code = <<<CODE
 	mov r9, rdi
 
-	mov rsi, [r9]
+	mov rsi, [r9] ; get parameter 6
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12

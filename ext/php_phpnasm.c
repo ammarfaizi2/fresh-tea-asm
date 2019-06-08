@@ -44,7 +44,7 @@ static PHP_METHOD(PhpNasm, execute) {
 
     ZEND_PARSE_PARAMETERS_START(0, -1)
         Z_PARAM_VARIADIC('+', args, argc)
-    ZEND_PARSE_PARAMETERS_END();    
+    ZEND_PARSE_PARAMETERS_END();
 
     // Get all args
     for (int i = 0; i < argc; i++) {
@@ -54,14 +54,14 @@ static PHP_METHOD(PhpNasm, execute) {
         } else {
             arg_val = &((args+i)->value);
         }
-        asm volatile("mov %0, %%rdi; push %%rdi" : : "r"(arg_val));
+        __asm__ volatile ("mov %0, %%rdi; push %%rdi" : : "r"(arg_val));
     }
-    asm volatile("lea (%rsp), %rdi");
+    __asm__ volatile ("lea (%rsp), %rdi");
 
     ((void * (*)())map)();
 
     for (int i = 0; i < argc; ++i) {
-        asm volatile("pop %rdi");
+        __asm__ volatile ("pop %rdi");
     }
 }
 

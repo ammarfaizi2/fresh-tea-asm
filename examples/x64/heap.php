@@ -6,10 +6,12 @@ $code = <<<CODE
 	syscall
 	mov rsi, rax
 	mov rdi, rax
-	add rdi, 5
+	add rdi, 4096
+	add rdi, 30
 	mov rax, 12
 	syscall
 
+	add rsi, 8161
 	mov rax, "aaaaaaaa"
 	mov [rsi], rax ; 0 - 7
 	mov [rsi+8], rax ; 8 - 15

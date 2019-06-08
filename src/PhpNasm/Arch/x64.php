@@ -49,7 +49,7 @@ final class x64
 		}
 
 		if (!is_writable($tmpDir)) {
-			throw PhpNasmException("tmp_dir is not writeable: {$tmpDir}");	
+			throw PhpNasmException("tmp_dir is not writeable: {$tmpDir}");
 		}
 
 		$this->tmpDir = $tmpDir;

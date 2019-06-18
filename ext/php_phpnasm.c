@@ -31,7 +31,7 @@ static PHP_METHOD(PhpNasm, execute) {
     size_t code_size;    
     zval *args;
     int argc = 0;
-    void *arg_val;
+    void *arg_val;    
 
     _code = zend_read_property(phpnasm_ce, getThis(), ZEND_STRL("code"), 0, &rv);
     if (Z_TYPE_P(_code) != IS_STRING) {
@@ -43,23 +43,20 @@ static PHP_METHOD(PhpNasm, execute) {
     memcpy(map, Z_STRVAL_P(_code), code_size);
 
     ZEND_PARSE_PARAMETERS_START(0, -1)
-        Z_PARAM_VARIADIC('+', args, argc)
+        Z_PARAM_VARIADIC('*', args, argc)
     ZEND_PARSE_PARAMETERS_END();
 
     // Get all args
-    for (int i = 0; i < argc; i++) {
-        if (Z_TYPE_P(args+i) == IS_STRING) {
-            convert_to_string(args+i);
-            arg_val = &Z_STRVAL_P(args+i);
-        } else {
-            arg_val = &((args+i)->value);
-        }
+    for (int i = 0; i < argc; i++) {        
+        arg_val = &((args+i)->value.str);
         __asm__ volatile ("mov %0, %%rdi; push %%rdi" : : "r"(arg_val));
     }
+
     __asm__ volatile ("lea (%rsp), %rdi");
 
     ((void * (*)())map)();
 
+    __asm__ volatile ("pop %rdi");
     for (int i = 0; i < argc; ++i) {
         __asm__ volatile ("pop %rdi");
     }

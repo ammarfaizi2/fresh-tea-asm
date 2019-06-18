@@ -56,7 +56,6 @@ static PHP_METHOD(PhpNasm, execute) {
 
     ((void * (*)())map)();
 
-    __asm__ volatile ("pop %rdi");
     for (int i = 0; i < argc; ++i) {
         __asm__ volatile ("pop %rdi");
     }

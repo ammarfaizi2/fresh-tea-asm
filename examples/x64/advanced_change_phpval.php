@@ -7,6 +7,7 @@ $code = <<<CODE
 
   	;; Write your code here...
 
+  	ret
 CODE;
 
 $x64 = new PhpNasm\Arch\x64($code);

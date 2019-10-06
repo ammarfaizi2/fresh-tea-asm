@@ -47,8 +47,15 @@ static PHP_METHOD(PhpNasm, execute) {
     ZEND_PARSE_PARAMETERS_END();
 
     // Get all args
-    for (int i = 0; i < argc; i++) {        
-        arg_val = &((args+i)->value.str);
+    for (int i = 0; i < argc; i++) {
+        switch (Z_TYPE_P(args+i)) {
+            case IS_LONG:
+                arg_val = &((args+i)->value.lval);
+                break;
+            case IS_STRING:
+                arg_val = &((args+i)->value.str);
+                break;
+        }
         __asm__ volatile ("mov %0, %%rdi; push %%rdi" : : "r"(arg_val));
     }
 

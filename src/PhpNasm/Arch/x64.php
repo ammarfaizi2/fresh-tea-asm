@@ -74,8 +74,8 @@ final class x64
 		$successFlag = time().rand().rand();
 		$tmpFile = $this->tmpDir."/phpnasm_".time()."_".rand().".asm";
 
-		$nasm = escapeshellarg(trim(shell_exec("which nasm")));
-		$objcopy = escapeshellarg(trim(shell_exec("which objcopy")));
+		$nasm = trim(shell_exec("which nasm"));
+		$objcopy = trim(shell_exec("which objcopy"));
 
 		if (!$nasm) {
 			throw new PhpNasmException("nasm binary not found");
@@ -85,24 +85,34 @@ final class x64
 			throw new PhpNasmException("objcopy binary not found");
 		}
 
+        $nasm = escapeshellarg($nasm);
+        $objcopy = escapeshellarg($objcopy);
+
 		file_put_contents($tmpFile, "section .text\n\n_start:\n{$this->text}");
 
 		$nasmCompile = shell_exec($nasm." -f elf64 -O{$this->optimization} ".escapeshellarg($tmpFile)." -o ".escapeshellarg($tmpFile.".o")." && echo ".$successFlag);
 		if (strpos($nasmCompile, $successFlag) === false) {
+            $this->clean($tmpFile);
 			throw new PhpNasmException("Compile error");
 		}
 
 		$copier = shell_exec($objcopy." -O binary -j .text ".escapeshellarg($tmpFile.".o")." ".escapeshellarg($tmpFile.".bin")." && echo ".$successFlag);
 		if (strpos($copier, $successFlag) === false) {
+            $this->clean($tmpFile);
 			throw new PhpNasmException("Link error");
 		}
 
 		unset($nasmCompile, $copier, $successFlag, $nasm, $objcopy);
 
 		$compiled = file_get_contents($tmpFile.".bin");
-		unlink($tmpFile);
-		unlink($tmpFile.".o");
-		unlink($tmpFile.".bin");
+        $this->clean($tmpFile);
 		return $compiled;
 	}
+
+    private function clean($tmpFile)
+    {
+        unlink($tmpFile);
+        unlink($tmpFile.".o");
+        unlink($tmpFile.".bin");
+    }
 }

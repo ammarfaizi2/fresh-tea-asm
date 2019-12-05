@@ -2,32 +2,33 @@
 
 require __DIR__."/../../src/autoload.php";
 
+$string = "Hello World!\n";
+$len = strlen($string);
+
 $code = <<<CODE
-	mov r10,0
-me:
-	mov rax, "Hello Wo"
-	push rax
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, rsp
-	mov rdx, 8
-	syscall
-	pop rax
+    push rbp
+    mov rbp, rsp
+    sub rsp, {$len}
+    mov rax, "Hello Wo"
+    mov [rbp - {$len}], rax
+    mov rax, "rld!"
+    mov [rbp - {$len} + 8], rax
+    mov byte [rbp - {$len} + 8 + 4], 10
+    xor r9, r9
 
-	mov rax, "rld"
-	or rax, 0x0a000000
-	push rax
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, rsp
-	mov rdx, 5
-	syscall
-	pop rax
+print_hello_world:
+    mov rax, 1
+    mov rdi, 1
+    lea rsi, [rbp - {$len}]
+    mov rdx, {$len}
+    syscall
+    inc r9
+    cmp r9, 10
+    jl print_hello_world
 
-	inc r10
-	cmp r10, 10
-	jl me
-	ret
+    mov rsp, rbp
+    pop rbp
+    ret
 CODE;
 
 $x64 = new PhpNasm\Arch\x64($code);

@@ -40,10 +40,11 @@ $content = str_repeat("\0", strlen($content));
 var_dump($content);
 
 
-$flag = 0x0002; // O_RDWR
+
 /**
  * Read file code.
  */
+$flag = 0x0002; // O_RDWR
 $code = <<<CODE
     mov r9, rdi
     mov rdi, [r9 + 8]

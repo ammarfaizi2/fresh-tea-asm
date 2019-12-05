@@ -1,39 +1,51 @@
 <?php
 require __DIR__."/../../src/autoload.php";
 $code = <<<CODE
-	mov r9, rdi
+    mov r9, rdi
 
 	mov rsi, [r9] ; get parameter 6
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
 	syscall
 
 	mov rsi, [r9+8] ; get parameter 5
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
 	syscall
 
 	mov rsi, [r9+16] ; get parameter 4
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
 	syscall
 
 	mov rsi, [r9+24] ; get parameter 3
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
 	syscall
 
 	mov rsi, [r9+32] ; get parameter 2
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12
 	syscall
 
 	mov rsi, [r9+40] ; get parameter 1
+    mov rsi, [rsi]
+    add rsi, 24
 	mov rax, 1
 	mov rdi, 1
 	mov rdx, 12

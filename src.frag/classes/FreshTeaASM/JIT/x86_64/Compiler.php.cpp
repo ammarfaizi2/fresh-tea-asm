@@ -83,8 +83,8 @@ static <?= $fta->method("compile"); ?> {
     bin_file_created = false,
     asm_file_created = false;
   zval *code_zv = NULL, *_this, rv;
+  zend_string *jited_code = NULL;
   char
-    *exefile,
     hash[41] /* sha1 */,
     optimize_lvl = 0,
     o_filename[sizeof("/tmp/") + 40 + sizeof(".o")],
@@ -212,7 +212,7 @@ static <?= $fta->method("compile"); ?> {
   {
     FILE *handle;
     char *objcp_bin = NULL, *cmd = NULL, *copy_ret = NULL;
-    size_t objcp_binl, compile_retl;
+    size_t objcp_binl, compile_retl, code_size;
 
     if (!shell_exec("which objcopy", &objcp_bin, &objcp_binl)) {
       zend_error(E_WARNING, "Cannot find objcopy executable binary");
@@ -227,7 +227,7 @@ static <?= $fta->method("compile"); ?> {
     {
       char cmd[objcp_binl + (sizeof(asm_filename) * 2) + 64];
       sprintf(bin_filename, "/tmp/%s.bin", hash);
-      sprintf(cmd, "%s -O binary -j .text %s %s && ok",
+      sprintf(cmd, "%s -O binary -j .text %s %s && echo ok",
         objcp_bin, o_filename, bin_filename);
 
       if (!shell_exec(cmd, &copy_ret, &compile_retl)) {
@@ -245,6 +245,21 @@ static <?= $fta->method("compile"); ?> {
       goto copy_ret;
     }
     bin_file_created = true;
+    fseek(handle, 0L, SEEK_END);
+    code_size = ftell(handle);
+    rewind(handle);
+
+    jited_code = zend_string_init("\0", 1, 0);
+    jited_code = zend_string_extend(jited_code, code_size, 0);
+
+    {
+      char *jited_code_str = ZSTR_VAL(jited_code);
+      while (!feof(handle)) {
+        jited_code_str += fread(jited_code_str, sizeof(char), 1, handle);
+      }
+      *jited_code_str = '\0';
+    }
+
     fclose(handle);
 
     copy_ret:
@@ -268,6 +283,8 @@ ret:
   if (!ret) {
     RETURN_FALSE;
   }
+
+  ZVAL_STR(return_value, jited_code);
 }
 
 <?php

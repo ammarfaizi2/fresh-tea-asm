@@ -6,5 +6,8 @@
 extern zend_class_entry *ce_ltp_FreshTeaASM_JIT_x86_64_Compiler;
 extern zend_function_entry methods_ltp_FreshTeaASM_JIT_x86_64_Compiler[];
 
+extern zend_class_entry *ce_ltp_FreshTeaASM_JIT_x86_64_Executor;
+extern zend_function_entry methods_ltp_FreshTeaASM_JIT_x86_64_Executor[];
+
 #endif
 /* End of file. */

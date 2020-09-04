@@ -1,6 +1,6 @@
 
 # Fresh Tea ASM
-Machine code executor and JIT compiler for PHP.
+Fresh Tea ASM is a machine code executor and JIT compiler for PHP, written in C/C++.
 
 # Installation
 ```sh

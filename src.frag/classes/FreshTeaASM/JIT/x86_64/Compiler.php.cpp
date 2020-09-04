@@ -58,7 +58,7 @@ inline static bool shell_exec(const char *cmd, char **target, size_t *len)
  *
  * @param string $code
  */
-static <?= $fta->method("__construct"); ?> {
+static <?= $fta->method("__construct", [ZEND_ACC_CTOR, ZEND_ACC_PUBLIC]); ?> {
   char *code;
   size_t code_len;
   zval *_this;
@@ -70,12 +70,40 @@ static <?= $fta->method("__construct"); ?> {
   _this = getThis();
   zend_update_property_stringl(
     <?= $fta->ce; ?>, _this, ZEND_STRL("code"), code, code_len TSRMLS_CC);
+  zend_update_property_long(
+      <?= $fta->ce; ?>, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
+}
+
+/**
+ * @param int $level
+ * @return void
+ */
+static <?= $fta->method("setOptimization", [ZEND_ACC_PUBLIC]); ?> {
+  zval *_this;
+  zend_long level;
+
+  ZEND_PARSE_PARAMETERS_START(1, 1)
+    Z_PARAM_LONG(level)
+  ZEND_PARSE_PARAMETERS_END_EX(RETURN_FALSE);
+
+
+  if ((level >= 0) && (level <= 3)) {
+
+    _this = getThis();
+    zend_update_property_long(
+      <?= $fta->ce; ?>, _this, ZEND_STRL("optimization_lvl"), level TSRMLS_CC);
+
+    RETURN_TRUE;
+  } else {
+    zend_error(E_WARNING, "Invalid optimization level");
+    RETURN_FALSE;
+  }
 }
 
 /**
  * @return bool
  */
-static <?= $fta->method("compile"); ?> {
+static <?= $fta->method("compile", [ZEND_ACC_PUBLIC]); ?> {
   FILE *handle;
   bool
     ret = true,

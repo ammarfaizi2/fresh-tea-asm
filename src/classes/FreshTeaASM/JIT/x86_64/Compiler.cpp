@@ -75,6 +75,34 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, __construct) {
   _this = getThis();
   zend_update_property_stringl(
     ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("code"), code, code_len TSRMLS_CC);
+  zend_update_property_long(
+      ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
+}
+
+/**
+ * @param int $level
+ * @return void
+ */
+static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, setOptimization) {
+  zval *_this;
+  zend_long level;
+
+  ZEND_PARSE_PARAMETERS_START(1, 1)
+    Z_PARAM_LONG(level)
+  ZEND_PARSE_PARAMETERS_END_EX(RETURN_FALSE);
+
+
+  if ((level >= 0) && (level <= 3)) {
+
+    _this = getThis();
+    zend_update_property_long(
+      ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("optimization_lvl"), level TSRMLS_CC);
+
+    RETURN_TRUE;
+  } else {
+    zend_error(E_WARNING, "Invalid optimization level");
+    RETURN_FALSE;
+  }
 }
 
 /**
@@ -232,7 +260,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile) {
     {
       char cmd[objcp_binl + (sizeof(asm_filename) * 2) + 64];
       sprintf(bin_filename, "/tmp/%s.bin", hash);
-      sprintf(cmd, "%s -O binary -j .text %s %s && echo ok",
+      sprintf(cmd, "%s -O binary -j .text %s %s 2>&1 && echo ok",
         objcp_bin, o_filename, bin_filename);
 
       if (!shell_exec(cmd, &copy_ret, &compile_retl)) {
@@ -293,7 +321,8 @@ ret:
 }
 
 zend_function_entry methods_ltp_FreshTeaASM_JIT_x86_64_Compiler[] = {
-  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Compiler, __construct, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Compiler, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
+  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Compiler, setOptimization, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile, NULL, ZEND_ACC_PUBLIC)
   PHP_FE_END
 };

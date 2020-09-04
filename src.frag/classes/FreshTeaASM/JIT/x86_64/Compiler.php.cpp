@@ -227,7 +227,7 @@ static <?= $fta->method("compile"); ?> {
     {
       char cmd[objcp_binl + (sizeof(asm_filename) * 2) + 64];
       sprintf(bin_filename, "/tmp/%s.bin", hash);
-      sprintf(cmd, "%s -O binary -j .text %s %s && echo ok",
+      sprintf(cmd, "%s -O binary -j .text %s %s 2>&1 && echo ok",
         objcp_bin, o_filename, bin_filename);
 
       if (!shell_exec(cmd, &copy_ret, &compile_retl)) {

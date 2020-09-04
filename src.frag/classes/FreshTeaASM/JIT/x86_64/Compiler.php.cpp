@@ -1,6 +1,10 @@
 
 #include <cstdio>
 #include <cstdbool>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 #include "helpers.hpp"
 
@@ -10,9 +14,10 @@ $fta = new PHPClass("FreshTeaASM\\JIT\\x86_64\\Compiler", __FILE__);
 $fta->start();
 ?>
 
-inline static zval *shell_exec(const char *cmd)
+inline static bool shell_exec(const char *cmd, char **target, size_t *len)
 {
-  zval *ret;
+  bool ret = true;
+  zval *retval;
   php_cf *func;
   zval params[1];
 
@@ -20,14 +25,30 @@ inline static zval *shell_exec(const char *cmd)
 
   func = php_cf_ctor((char *)"shell_exec", 1);
   func->params = params;
-  ret = php_call_func(func);
+  retval = php_call_func(func);
+
+  if (retval) {
+    if (Z_TYPE_P(retval) == IS_STRING) {
+
+      *len = Z_STRLEN_P(retval);
+
+      *target = (char *)emalloc((*len) + 1);
+      memcpy(*target, Z_STRVAL_P(retval), (*len));
+      (*target)[(*len)] = '\0';
+
+    } else {
+      ret = false;
+    }
+
+    zval_dtor(retval);
+
+  } else {
+    zend_error(E_WARNING, "Cannot execute shell_exec");
+    ret = false;
+  }
+
   php_cf_dtor(func);
   zval_dtor(&params[0]);
-
-  if (!ret) {
-    zend_error(E_WARNING, "Cannot execute shell_exec");
-    return NULL;
-  }
 
   return ret;
 }
@@ -56,9 +77,18 @@ static <?= $fta->method("__construct"); ?> {
  */
 static <?= $fta->method("compile"); ?> {
   FILE *handle;
-  bool ret = true;
-  zval *code_zv = NULL, *hash = NULL, *_this, rv, *exefile = NULL;
-  char filename[sizeof("/tmp/") + 41 + sizeof(".asm")];
+  bool
+    ret = true,
+    o_file_created = false,
+    asm_file_created = false;
+  zval *code_zv = NULL, *_this, rv;
+  char
+    *exefile,
+    hash[41] /* sha1 */,
+    optimize_lvl = 0,
+    o_filename[sizeof("/tmp/") + 40 + sizeof(".o")],
+    asm_filename[sizeof("/tmp/") + 40 + sizeof(".asm")];
+
 
   _this = getThis();
   code_zv = zend_read_property(<?= $fta->ce; ?>, _this, ZEND_STRL("code"), 1, &rv TSRMLS_CC);
@@ -77,10 +107,11 @@ static <?= $fta->method("compile"); ?> {
 
   /* Hash the content. */
   {
+    zval *retval;
     php_cf *func;
     func = php_cf_ctor((char *)"sha1", 1);
     func->params = code_zv;
-    hash = php_call_func(func);
+    retval = php_call_func(func);
 
     if (!hash) {
       zend_error(E_WARNING, "Cannot call sha1 hash");
@@ -88,27 +119,35 @@ static <?= $fta->method("compile"); ?> {
       goto hash_done;
     }
 
-    if (Z_TYPE_P(hash) == IS_NULL) {
+    if (Z_TYPE_P(retval) == IS_NULL) {
       zend_error(E_WARNING, "sha1 returned null");
       ret = false;
       goto hash_done;
     }
 
+    memcpy(hash, Z_STRVAL_P(retval), 40);
+    hash[40] = '\0';
+
     hash_done:
-    if (func) php_cf_dtor(func);
+    zval_dtor(retval);
+    php_cf_dtor(func);
     if (!ret) goto ret;
   }
 
-  /* Write to file. */
-  {
-    sprintf(filename, "/tmp/%s.asm", Z_STRVAL_P(hash));
 
-    FILE *handle = fopen(filename, "wb");
+
+  /* Write the file. */
+  {
+    sprintf(asm_filename, "/tmp/%s.asm", hash);
+    FILE *handle = fopen(asm_filename, "wb");
     if (!handle) {
-      zend_error(E_WARNING, "Cannot open file: %s", filename);
+      zend_error(E_WARNING, "Cannot write to %s", asm_filename);
       ret = false;
       goto ret;
     }
+
+    asm_file_created = true;
+
     #define _START_FILE \
       "section .text\n\n_start:\n"
 
@@ -117,43 +156,60 @@ static <?= $fta->method("compile"); ?> {
     fclose(handle);
   }
 
+
+
   /* Compile the file. */
   {
-    size_t exefile_len;
-    exefile = shell_exec("which nasm");
+    FILE *handle;
+    char *nasm_bin = NULL, *cmd = NULL, *compile_ret = NULL;
+    size_t nasm_binl, compile_retl;
 
-    if ((!exefile) || (Z_TYPE_P(exefile) == IS_NULL)) {
-      zend_error(E_WARNING, "Cannot find nasm binary");
+    if (!shell_exec("which nasm", &nasm_bin, &nasm_binl)) {
+      zend_error(E_WARNING, "Cannot find nasm executable binary");
       ret = false;
-      goto ret;
+      goto compile_ret;
     }
 
-    char nasm_cmd[Z_STRLEN_P(exefile) + (sizeof(filename) * 2) + 128];
+    if (nasm_bin[nasm_binl - 1] == '\n') {
+      nasm_bin[nasm_binl - 1] = '\0';
+    }
 
-    printf("exefile = %s\n", Z_STRVAL_P(exefile));
+    cmd = (char *)emalloc(nasm_binl + (sizeof(asm_filename) * 2) + 64);
 
-    sprintf(nasm_cmd, "%s -felf64 %s -o /tmp/%s.o",
-      Z_STRVAL_P(exefile), filename, Z_STRVAL_P(hash));
+    sprintf(o_filename, "/tmp/%s.o", hash);
+    sprintf(cmd, "%s -felf64 -O%d %s -o %s 2>&1 && echo ok",
+      nasm_bin, optimize_lvl, asm_filename, o_filename);
 
-    php_printf("%s\n", nasm_cmd);
-    zval_dtor(exefile);
-    exefile = NULL;
+    if (!shell_exec(cmd, &compile_ret, &compile_retl)) {
+      zend_error(E_WARNING, "Cannot execute: %s", cmd);
+      ret = false;
+      goto compile_ret;
+    }
+
+    handle = fopen(o_filename, "rb");
+    if (!handle) {
+      zend_error(E_WARNING, "Compilation failed!");
+      zend_error(E_WARNING, "NASM Output: %s", compile_ret);
+      ret = false;
+      goto compile_ret;
+    }
+    o_file_created = true;
+    fclose(handle);
+
+    compile_ret:
+    if (cmd) efree(cmd);
+    if (nasm_bin) efree(nasm_bin);
+    if (compile_ret) efree(compile_ret);
+    if (!ret) goto ret;
   }
-
-  /* Take .text section. */
-  {
-
-  }
-
-  /* Clean up. */
-  {
-    remove(filename);
-  }
-
 
 ret:
-  if (hash) zval_dtor(hash);
-  if (exefile) zval_dtor(exefile);
+  if (asm_file_created) {
+    remove(asm_filename);
+  }
+  if (o_file_created) {
+    remove(o_filename);
+  }
   if (!ret) {
     RETURN_FALSE;
   }

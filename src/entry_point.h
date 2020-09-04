@@ -18,7 +18,7 @@ ZEND_END_MODULE_GLOBALS(fresh_tea_asm)
 
 ZEND_EXTERN_MODULE_GLOBALS(fresh_tea_asm)
 
-#define TEABOT8G(v) ZEND_MODULE_GLOBALS_ACCCESSOR(fresh_tea_asm, v)
+#define FRESH_TEA_ASMG(v) ZEND_MODULE_GLOBALS_ACCCESSOR(fresh_tea_asm, v)
 
 #define phpext_fresh_tea_asm_ptr (&fresh_tea_asm_module_entry)
 

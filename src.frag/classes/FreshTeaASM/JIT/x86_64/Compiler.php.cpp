@@ -80,6 +80,7 @@ static <?= $fta->method("compile"); ?> {
   bool
     ret = true,
     o_file_created = false,
+    bin_file_created = false,
     asm_file_created = false;
   zval *code_zv = NULL, *_this, rv;
   char
@@ -87,6 +88,7 @@ static <?= $fta->method("compile"); ?> {
     hash[41] /* sha1 */,
     optimize_lvl = 0,
     o_filename[sizeof("/tmp/") + 40 + sizeof(".o")],
+    bin_filename[sizeof("/tmp/") + 40 + sizeof(".bin")],
     asm_filename[sizeof("/tmp/") + 40 + sizeof(".asm")];
 
 
@@ -161,7 +163,7 @@ static <?= $fta->method("compile"); ?> {
   /* Compile the file. */
   {
     FILE *handle;
-    char *nasm_bin = NULL, *cmd = NULL, *compile_ret = NULL;
+    char *nasm_bin = NULL, *compile_ret = NULL;
     size_t nasm_binl, compile_retl;
 
     if (!shell_exec("which nasm", &nasm_bin, &nasm_binl)) {
@@ -174,16 +176,18 @@ static <?= $fta->method("compile"); ?> {
       nasm_bin[nasm_binl - 1] = '\0';
     }
 
-    cmd = (char *)emalloc(nasm_binl + (sizeof(asm_filename) * 2) + 64);
+    {
+      char cmd[nasm_binl + (sizeof(asm_filename) * 2) + 64];
 
-    sprintf(o_filename, "/tmp/%s.o", hash);
-    sprintf(cmd, "%s -felf64 -O%d %s -o %s 2>&1 && echo ok",
-      nasm_bin, optimize_lvl, asm_filename, o_filename);
+      sprintf(o_filename, "/tmp/%s.o", hash);
+      sprintf(cmd, "%s -felf64 -O%d %s -o %s 2>&1 && echo ok",
+        nasm_bin, optimize_lvl, asm_filename, o_filename);
 
-    if (!shell_exec(cmd, &compile_ret, &compile_retl)) {
-      zend_error(E_WARNING, "Cannot execute: %s", cmd);
-      ret = false;
-      goto compile_ret;
+      if (!shell_exec(cmd, &compile_ret, &compile_retl)) {
+        zend_error(E_WARNING, "Cannot execute: %s", cmd);
+        ret = false;
+        goto compile_ret;
+      }
     }
 
     handle = fopen(o_filename, "rb");
@@ -197,13 +201,64 @@ static <?= $fta->method("compile"); ?> {
     fclose(handle);
 
     compile_ret:
-    if (cmd) efree(cmd);
     if (nasm_bin) efree(nasm_bin);
     if (compile_ret) efree(compile_ret);
     if (!ret) goto ret;
   }
 
+
+
+  /* Copy the machine code. */
+  {
+    FILE *handle;
+    char *objcp_bin = NULL, *cmd = NULL, *copy_ret = NULL;
+    size_t objcp_binl, compile_retl;
+
+    if (!shell_exec("which objcopy", &objcp_bin, &objcp_binl)) {
+      zend_error(E_WARNING, "Cannot find objcopy executable binary");
+      ret = false;
+      goto copy_ret;
+    }
+
+    if (objcp_bin[objcp_binl - 1] == '\n') {
+      objcp_bin[objcp_binl - 1] = '\0';
+    }
+
+    {
+      char cmd[objcp_binl + (sizeof(asm_filename) * 2) + 64];
+      sprintf(bin_filename, "/tmp/%s.bin", hash);
+      sprintf(cmd, "%s -O binary -j .text %s %s && ok",
+        objcp_bin, o_filename, bin_filename);
+
+      if (!shell_exec(cmd, &copy_ret, &compile_retl)) {
+        zend_error(E_WARNING, "Cannot execute: %s", cmd);
+        ret = false;
+        goto copy_ret;
+      }
+    }
+
+    handle = fopen(bin_filename, "rb");
+    if (!handle) {
+      zend_error(E_WARNING, "Copy failed!");
+      zend_error(E_WARNING, "objcopy output: %s", copy_ret);
+      ret = false;
+      goto copy_ret;
+    }
+    bin_file_created = true;
+    fclose(handle);
+
+    copy_ret:
+    if (cmd) efree(cmd);
+    if (objcp_bin) efree(objcp_bin);
+    if (copy_ret) efree(copy_ret);
+    if (!ret) goto ret;
+  }
+
+
 ret:
+  if (bin_file_created) {
+    remove(bin_filename);
+  }
   if (asm_file_created) {
     remove(asm_filename);
   }

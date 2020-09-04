@@ -2,7 +2,7 @@
 
 $code = <<<CODE
   xor rax, rax
-  mov rax, "Hello"a
+  mov rax, "Hello"
   ret
 CODE;
 

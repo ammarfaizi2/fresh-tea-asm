@@ -71,7 +71,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, __construct) {
   zend_update_property_stringl(
     ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("code"), code, code_len TSRMLS_CC);
   zend_update_property_long(
-      ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
+    ce_ltp_FreshTeaASM_JIT_x86_64_Compiler, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
 }
 
 /**

@@ -66,7 +66,7 @@ static <?= $fta->method("__construct", [ZEND_ACC_CTOR, ZEND_ACC_PUBLIC]); ?> {
   zend_update_property_stringl(
     <?= $fta->ce; ?>, _this, ZEND_STRL("code"), code, code_len TSRMLS_CC);
   zend_update_property_long(
-      <?= $fta->ce; ?>, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
+    <?= $fta->ce; ?>, _this, ZEND_STRL("optimization_lvl"), 0 TSRMLS_CC);
 }
 
 /**

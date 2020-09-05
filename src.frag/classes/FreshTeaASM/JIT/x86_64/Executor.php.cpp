@@ -65,6 +65,10 @@ static <?= $exe->method("execute", [ZEND_ACC_PUBLIC]); ?> {
       case IS_STRING:
         arg_val = (void *)&((args+i)->value.str);
         break;
+
+      default:
+        continue;
+        break;
     }
 
     __asm__ volatile ("mov %0, %%r9; push %%r9" :: "r"(arg_val));

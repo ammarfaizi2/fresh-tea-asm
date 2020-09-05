@@ -70,6 +70,10 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
       case IS_STRING:
         arg_val = (void *)&((args+i)->value.str);
         break;
+
+      default:
+        continue;
+        break;
     }
 
     __asm__ volatile ("mov %0, %%r9; push %%r9" :: "r"(arg_val));

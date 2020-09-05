@@ -104,7 +104,6 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, setOptimization) {
  * @return bool
  */
 static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile) {
-  FILE *handle;
   bool
     ret = true,
     o_file_created = false,
@@ -239,7 +238,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile) {
   /* Copy the machine code. */
   {
     FILE *handle;
-    char *objcp_bin = NULL, *cmd = NULL, *copy_ret = NULL;
+    char *objcp_bin = NULL, *copy_ret = NULL;
     size_t objcp_binl, compile_retl, code_size;
 
     if (!shell_exec("which objcopy", &objcp_bin, &objcp_binl)) {
@@ -291,9 +290,8 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile) {
     fclose(handle);
 
     copy_ret:
-    if (cmd) efree(cmd);
-    if (objcp_bin) efree(objcp_bin);
     if (copy_ret) efree(copy_ret);
+    if (objcp_bin) efree(objcp_bin);
     if (!ret) goto ret;
   }
 

@@ -99,7 +99,6 @@ static <?= $fta->method("setOptimization", [ZEND_ACC_PUBLIC]); ?> {
  * @return bool
  */
 static <?= $fta->method("compile", [ZEND_ACC_PUBLIC]); ?> {
-  FILE *handle;
   bool
     ret = true,
     o_file_created = false,
@@ -234,7 +233,7 @@ static <?= $fta->method("compile", [ZEND_ACC_PUBLIC]); ?> {
   /* Copy the machine code. */
   {
     FILE *handle;
-    char *objcp_bin = NULL, *cmd = NULL, *copy_ret = NULL;
+    char *objcp_bin = NULL, *copy_ret = NULL;
     size_t objcp_binl, compile_retl, code_size;
 
     if (!shell_exec("which objcopy", &objcp_bin, &objcp_binl)) {
@@ -286,9 +285,8 @@ static <?= $fta->method("compile", [ZEND_ACC_PUBLIC]); ?> {
     fclose(handle);
 
     copy_ret:
-    if (cmd) efree(cmd);
-    if (objcp_bin) efree(objcp_bin);
     if (copy_ret) efree(copy_ret);
+    if (objcp_bin) efree(objcp_bin);
     if (!ret) goto ret;
   }
 

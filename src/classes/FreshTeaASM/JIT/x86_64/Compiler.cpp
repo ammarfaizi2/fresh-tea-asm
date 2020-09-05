@@ -142,7 +142,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Compiler, compile) {
     func->params = code_zv;
     retval = php_call_func(func);
 
-    if (!hash) {
+    if (!retval) {
       zend_error(E_WARNING, "Cannot call sha1 hash");
       ret = false;
       goto hash_done;

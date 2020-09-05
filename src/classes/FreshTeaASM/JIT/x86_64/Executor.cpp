@@ -76,12 +76,11 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
   }
 
   {
-    register void *rdi = NULL;
-    register void (*callback)(void *rdi);
-    callback = (void (*)(void *rdi))(*((void **)Z_STRVAL_P(jited_zv)));
+    register void (*callback)();
+    callback = (void (*)())(*((void **)Z_STRVAL_P(jited_zv)));
 
     __asm__ volatile ("lea (%rsp), %rdi");
-    callback(rdi);
+    callback();
 
     for (int i = 0; i < argc; ++i) {
       __asm__ volatile ("pop %r9");
@@ -89,9 +88,23 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
   }
 }
 
+/**
+ * Destructor.
+ */
+static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, __destruct) {
+  zval *jited_zv, *_this, *code, rv;
+
+  _this = getThis();
+  code     = zend_read_property(ce_ltp_FreshTeaASM_JIT_x86_64_Executor, _this, ZEND_STRL("code"), 1, &rv TSRMLS_CC);
+  jited_zv = zend_read_property(ce_ltp_FreshTeaASM_JIT_x86_64_Executor, _this, ZEND_STRL("jited"), 1, &rv TSRMLS_CC);
+
+  munmap(*((void **)Z_STRVAL_P(jited_zv)), Z_STRLEN_P(code));
+}
+
 zend_function_entry methods_ltp_FreshTeaASM_JIT_x86_64_Executor[] = {
   PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Executor, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
-  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Executor, execute, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
+  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Executor, execute, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(ltp_FreshTeaASM_JIT_x86_64_Executor, __destruct, NULL, ZEND_ACC_DTOR | ZEND_ACC_PUBLIC)
   PHP_FE_END
 };
 

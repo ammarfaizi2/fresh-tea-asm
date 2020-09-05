@@ -42,7 +42,7 @@ static <?= $exe->method("__construct", [ZEND_ACC_CTOR, ZEND_ACC_PUBLIC]); ?> {
  *
  * @param string $code
  */
-static <?= $exe->method("execute", [ZEND_ACC_CTOR, ZEND_ACC_PUBLIC]); ?> {
+static <?= $exe->method("execute", [ZEND_ACC_PUBLIC]); ?> {
 
   int argc;
   zval *jited_zv, *_this, *args, rv;
@@ -71,17 +71,29 @@ static <?= $exe->method("execute", [ZEND_ACC_CTOR, ZEND_ACC_PUBLIC]); ?> {
   }
 
   {
-    register void *rdi = NULL;
-    register void (*callback)(void *rdi);
-    callback = (void (*)(void *rdi))(*((void **)Z_STRVAL_P(jited_zv)));
+    register void (*callback)();
+    callback = (void (*)())(*((void **)Z_STRVAL_P(jited_zv)));
 
     __asm__ volatile ("lea (%rsp), %rdi");
-    callback(rdi);
+    callback();
 
     for (int i = 0; i < argc; ++i) {
       __asm__ volatile ("pop %r9");
     }
   }
+}
+
+/**
+ * Destructor.
+ */
+static <?= $exe->method("__destruct", [ZEND_ACC_DTOR, ZEND_ACC_PUBLIC]); ?> {
+  zval *jited_zv, *_this, *code, rv;
+
+  _this = getThis();
+  code     = zend_read_property(<?= $exe->ce; ?>, _this, ZEND_STRL("code"), 1, &rv TSRMLS_CC);
+  jited_zv = zend_read_property(<?= $exe->ce; ?>, _this, ZEND_STRL("jited"), 1, &rv TSRMLS_CC);
+
+  munmap(*((void **)Z_STRVAL_P(jited_zv)), Z_STRLEN_P(code));
 }
 
 <?php

@@ -3,9 +3,9 @@ $code = <<<ASM
   mov r9, rdi                 ; Copy parameters address to r9 register.
   xor r8, r8                  ; Zero r8 register.
 .loop_1:
-  mov r10, [r9 + r8 * 8]      ; Take the n parameter.
-  lea rsi, [r10 + 24]         ; Take the string address.
-  mov rdx, [r10 + 16]         ; Take the string length.
+  mov rax, [r9 + r8 * 8]      ; Take the n parameter.
+  lea rsi, [rax + 24]         ; Take the string address.
+  mov rdx, [rax + 16]         ; Take the string length.
   mov byte [rsi + rdx], 0xa   ; Put linefeed to the end of string.
   inc rdx                     ; Increment the rdx register.
   mov rax, 1                  ; Syscall write.

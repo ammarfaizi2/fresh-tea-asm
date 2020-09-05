@@ -59,7 +59,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
     Z_PARAM_VARIADIC('*', args, argc)
   ZEND_PARSE_PARAMETERS_END();
 
-  for (int i = 0; i < argc; i++) {
+  for (int i = argc - 1; i >= 0; i--) {
     register void *arg_val;
 
     switch (Z_TYPE_P(args+i)) {
@@ -68,7 +68,7 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
         break;
 
       case IS_STRING:
-        arg_val = (void *)&((args+i)->value.str);
+        arg_val = (void *)((args+i)->value.str);
         break;
 
       default:

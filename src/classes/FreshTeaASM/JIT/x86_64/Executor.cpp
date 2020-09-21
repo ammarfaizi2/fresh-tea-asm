@@ -22,10 +22,10 @@ zend_class_entry *ce_ltp_FreshTeaASM_JIT_x86_64_Executor;
  * @param string $code
  */
 static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, __construct) {
-  char *code;
-  void *jited;
-  size_t code_len;
-  zval *_this;
+  register char *code;
+  register void *jited;
+  register zval *_this;
+  register size_t code_len;
 
   ZEND_PARSE_PARAMETERS_START(1, 1)
     Z_PARAM_STRING(code, code_len)
@@ -49,8 +49,9 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, __construct) {
  */
 static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
 
-  int argc;
-  zval *jited_zv, *_this, *args, rv;
+  zval rv;
+  register int argc;
+  register zval *jited_zv, *_this, *args;
 
   _this = getThis();
   jited_zv = zend_read_property(ce_ltp_FreshTeaASM_JIT_x86_64_Executor, _this, ZEND_STRL("jited"), 1, &rv TSRMLS_CC);
@@ -59,36 +60,22 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
     Z_PARAM_VARIADIC('*', args, argc)
   ZEND_PARSE_PARAMETERS_END();
 
-  for (int i = argc - 1; i >= 0; i--) {
-    register void *arg_val;
-
-    switch (Z_TYPE_P(args+i)) {
-      case IS_LONG:
-        arg_val = (void *)Z_LVAL_P((args+i));
-        break;
-
-      case IS_STRING:
-        arg_val = (void *)((args+i)->value.str);
-        break;
-
-      default:
-        continue;
-        break;
-    }
-
-    __asm__ volatile ("mov %0, %%r9; push %%r9" :: "r"(arg_val));
+  for (register int i = argc - 1; i >= 0; i--) {
+    __asm__ volatile (
+      "mov %0, %%r9;"
+      "push %%r9"
+      :: "m"((args+i)->value)
+      :  "%r9"
+    );
   }
 
   {
     register void (*callback)();
     callback = (void (*)())(*((void **)Z_STRVAL_P(jited_zv)));
-
-    __asm__ volatile ("lea (%rsp), %rdi");
+    __asm__ volatile ("lea (%%rsp), %%rdi;" ::: "%rdi");
     callback();
-
-    for (int i = 0; i < argc; ++i) {
-      __asm__ volatile ("pop %r9");
-    }
+    register uint64_t argc_add = argc * sizeof(void *);
+    __asm__ volatile ("add %0, %%rsp" :: "r"(argc_add));
   }
 }
 
@@ -96,7 +83,8 @@ static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, execute) {
  * Destructor.
  */
 static PHP_METHOD(ltp_FreshTeaASM_JIT_x86_64_Executor, __destruct) {
-  zval *jited_zv, *_this, *code, rv;
+  zval rv;
+  register zval *jited_zv, *_this, *code;
 
   _this = getThis();
   code     = zend_read_property(ce_ltp_FreshTeaASM_JIT_x86_64_Executor, _this, ZEND_STRL("code"), 1, &rv TSRMLS_CC);

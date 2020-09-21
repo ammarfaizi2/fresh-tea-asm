@@ -277,7 +277,7 @@ static <?= $fta->method("compile", [ZEND_ACC_PUBLIC]); ?> {
     {
       char *jited_code_str = ZSTR_VAL(jited_code);
       while (!feof(handle)) {
-        jited_code_str += fread(jited_code_str, sizeof(char), 1, handle);
+        jited_code_str += fread(jited_code_str, sizeof(char), 4096, handle);
       }
       *jited_code_str = '\0';
     }
